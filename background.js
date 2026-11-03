@@ -12,16 +12,21 @@ async function data() {
 }
 
 // engine claim -> the row shape the RGHS panel fills
+// "Any Other Speciality" needs the real speciality typed in; the doctor's department is the best we have.
+const SPEC_NAME = { 'obs & gynae': 'Obstetrics and Gynaecology', derma: 'Dermatology', ophthal: 'Ophthalmology', orthopedic: 'Orthopaedics',
+  paediatrician: 'Paediatrics', anesthesia: 'Anaesthesiology', anesthesiology: 'Anaesthesiology', pathology: 'Pathology', radiology: 'Radiology' };
+const deptName = (d) => { const k = String(d || '').trim(); return SPEC_NAME[k.toLowerCase()] || k.replace(/\w\S*/g, (w) => w[0].toUpperCase() + w.slice(1).toLowerCase()); };
 function toRow(c) {
+  const other = /any other/i.test(c.speciality || '');
   return {
     tid: c.tid,
     patient: c.patient,
     speciality: c.speciality,
-    otherSpeciality: /any other/i.test(c.speciality || '') ? (c.docSpeciality || '') : '',
+    otherSpeciality: other ? deptName(c.dept) : '',
     doctor: c.doctor,
     rmcNo: c.rmc,
     rmcType: c.rmcType,
-    docSpeciality: c.docSpeciality,
+    docSpeciality: other ? deptName(c.dept) : c.docSpeciality,
     packages: String(c.codes || '').split(/[;,]/).map((x) => x.trim()).filter(Boolean),
     prescDate: c.prescDate,
     validity: String(c.validity || 15),
@@ -54,7 +59,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         }
         const merged = rows.concat(old.filter((r) => !rows.some((n) => n.tid === r.tid)));
         await chrome.storage.local.set({ pjRows: merged, pjFromHospedia: Date.now() });
-        sendResponse({ count: rows.length, noTid: (claims.noTid || []).length });
+        const by = (k) => claims.filter((c) => c.status === k).length;
+        sendResponse({ count: rows.length, noTid: (claims.noTid || []).length, ready: by('ready'), check: by('check'), stop: by('stop'),
+          preAuth: claims.filter((c) => c.preAuth).length, noDoctor: claims.filter((c) => !c.doctorFound).length });
       } catch (e) {
         sendResponse({ error: e.message });
       }
@@ -63,11 +70,20 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 });
 
+const RGHS_URL = 'https://rghs.rajasthan.gov.in/RGHS/tmsOPDDetails';
+// Toolbar icon: show / hide the panel on the RGHS page (or run the list maker on Hospedia).
+// On any other tab it switches to the RGHS tab, or opens one - it never replaces the page you are on.
 chrome.action.onClicked.addListener(async (tab) => {
   if (!tab.id) return;
   try {
     await chrome.tabs.sendMessage(tab.id, { type: 'PJ_TOGGLE_PANEL' });
   } catch (e) {
-    chrome.tabs.update(tab.id, { url: 'https://rghs.rajasthan.gov.in/RGHS/tmsOPDDetails' });
+    const [t] = await chrome.tabs.query({ url: RGHS_URL + '*' }).catch(() => []);
+    if (t) {
+      await chrome.tabs.update(t.id, { active: true });
+      chrome.windows.update(t.windowId, { focused: true }).catch(() => {});
+    } else {
+      chrome.tabs.create({ url: RGHS_URL, index: tab.index + 1 });
+    }
   }
 });

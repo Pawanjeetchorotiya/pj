@@ -1,4 +1,4 @@
-PJ Auto OPD Claim  (v3.1)
+PJ Auto OPD Claim  (v3.2)
 =========================
 
 WHAT IT DOES
@@ -18,15 +18,33 @@ INSTALL (2 minutes)
 EVERY DAY
   1. Hospedia > Reports > Panel Wise Invoice Summary > RGHS NEW >
      Panel Business Detailed > dates > VIEW ON SCREEN >
-     press the blue "PJ Make RGHS claim list" button.
-  2. Open the RGHS portal OPD claim page. The PJ panel is at the bottom right.
-     Press "Load from Hospedia".
-  3. Press "Choose scan folder" ONCE and pick your scan folder.
+     press the blue "Make RGHS claim list" button. A card shows how many
+     claims are ready, which need checking and which need you.
+  2. Open the RGHS portal OPD claim page (the card has a button for it).
+     The PJ panel is at the bottom right. Press "⬇ Hospedia".
+  3. Press "📁 Scan folder" ONCE and pick your scan folder.
      The tool remembers that folder. Files scanned later are picked up on their own.
-  4. Press "Type text for all". The scanned slip opens on the left;
-     type Chief Complaints and Diagnosis, press "Save & next".
+  4. Press step 3 "Text" (or Alt+T). The scanned slip opens on the left;
+     type Chief Complaints and Diagnosis, press "Save & next" (Ctrl+Enter).
      Text you have typed before comes back under "Quick pick".
-  5. Press "Fill next TID". Check the form. Press FINAL CLAIM SUBMISSION yourself.
+  5. Press "▶ Fill next TID" (or Alt+N). Check the form and the yellow
+     "Please check" box. Press FINAL CLAIM SUBMISSION yourself.
+     The claim turns "Done" on its own after the portal says it was submitted.
+
+THE PANEL
+  - Steps 1-4 at the top show where you are; click a step to do it.
+  - Green bar = claims submitted today.
+  - Chips (Waiting / Ready / Check / Error / Done) filter the list.
+    Type in the search box (or press /) to find a TID, patient or doctor.
+  - ⋯ menu: download a status report (Excel), a blank Excel template,
+    or clear the list.
+  - Drag the panel by its top bar; it stays where you put it.
+  - Toolbar icon: show / hide the panel. On Hospedia it makes the list.
+    On any other tab it switches to (or opens) the RGHS page.
+
+KEYS
+  Alt+N  fill next TID        Alt+T  type text        Alt+M  minimise
+  Ctrl+Enter  save text & next                       Esc    close text box
 
 WHAT STAYS MANUAL (and why)
   - Chief complaints and diagnosis: these are handwritten on the OPD slip.
@@ -38,6 +56,11 @@ WHAT STAYS MANUAL (and why)
 PRE-AUTH WARNING
   The panel warns when investigations come to more than Rs 2000, or when
   more than one CT / MRI / Doppler is in the claim.
+
+WHEN SOMETHING IS WRONG
+  The tool still fills everything it can. If the doctor is not in the list,
+  an RMC does not verify or a package code is not found, the rest of the
+  form is filled and the claim is marked "Check" with the reason.
 
 PRIVACY
   Everything stays in your own Chrome. No patient data is sent anywhere.

@@ -273,7 +273,7 @@
       claims.push({
         tid, mr: first.mr, patient: first.patient.replace(/\s+\d{12,}\s*$/, ''), date: first.date, bills: [...new Set(its.map(i => i.billNo))].join(', '),
         doctor: doc ? doc.name : rawDoc, doctorFound: !!doc, rmc: doc ? doctorRmc(doc, settings.rmcPart) : '', rmcType: doc ? doc.type : '',
-        speciality: doc ? doc.speciality : '', docSpeciality: doc ? doc.speciality : '',
+        speciality: doc ? doc.speciality : '', docSpeciality: doc ? doc.speciality : '', dept: doc ? (doc.dept || '') : '',
         codes: codes.join('; '), prescDate: toDMY(first.date, dayFirst), validity: settings.validity, complaints: '', diagnosis: '',
         bill, discount: disc, matchKey: first.mr, files: ['', '', '', ''],
         lines, notes, preAuth, needText, selected: true
