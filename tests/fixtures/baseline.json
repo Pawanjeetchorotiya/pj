@@ -1,0 +1,78 @@
+{
+ "label": "baseline",
+ "ext": "/home/claude/pj/ref/auto-opd",
+ "pass": 9,
+ "total": 14,
+ "res": [
+  {
+   "n": "T1 status Ready",
+   "pass": true,
+   "info": ""
+  },
+  {
+   "n": "T1 speciality/doctor/RMC verified",
+   "pass": true,
+   "info": ""
+  },
+  {
+   "n": "T1 packages 1A,1611,1444",
+   "pass": true,
+   "info": ""
+  },
+  {
+   "n": "T1 prescription+bill+tick",
+   "pass": true,
+   "info": ""
+  },
+  {
+   "n": "T1 uploads presc/inv/bill",
+   "pass": false,
+   "info": "|||"
+  },
+  {
+   "n": "T1 never pressed save/final",
+   "pass": true,
+   "info": ""
+  },
+  {
+   "n": "T1 resumed after page reload",
+   "pass": true,
+   "info": ""
+  },
+  {
+   "n": "T7 marked Done after user submits",
+   "pass": true,
+   "info": ""
+  },
+  {
+   "n": "T1 no page errors",
+   "pass": true,
+   "info": ""
+  },
+  {
+   "n": "T2 other codes still added (1A,1444)",
+   "pass": false,
+   "info": "1A | Error"
+  },
+  {
+   "n": "T2 rest of form still filled",
+   "pass": false,
+   "info": "{\"tid\":\"2026103013724771\",\"spec\":\"Orthopaedics\",\"doc\":\"DR MAHAVEER MALI\",\"rmc\":\"17569\",\"q\":\"PG\",\"tdn\":\"DR MAHAVEER MALI\",\"pk\":[\"1A\"],\"amt\":\"350\",\"pd\":\"\",\"val\":\"\",\"cc\":\"\",\"dg\":\"\",\"bill\":\"\",\"disc\":\"\",\"files\":[\"\",\"\",\"\",\"\"],\"dec\":false,\"saved\":\"\",\"reloads\":1}"
+  },
+  {
+   "n": "T2 bad code 9999 reported",
+   "pass": true,
+   "info": ""
+  },
+  {
+   "n": "T3 PAEDIATRICS -> Paediatric Medicine",
+   "pass": false,
+   "info": "Error {\"tid\":\"2026102914401495\",\"spec\":\"--Select--\",\"doc\":\"--Select--\",\"rmc\":\"\",\"q\":\"UG\",\"tdn\":\"\",\"pk\":[],\"amt\":\"\",\"pd\":\"\",\"val\":\"\",\"cc\":\"\",\"dg\":\"\",\"bill\":\"\",\"disc\":\"\",\"files\":[\"\",\"\",\"\",\"\"],\"dec\":false,\"saved\":\"\",\"reloads\":1} older.\n08:19:51  Page reloaded after search. Continuing...\n08:19:51  --- TID 2026102914401495 ---\n08:19:51  TID already open on the page.\n08:19:51  ERROR: \"PAEDIATRICS\" is not in the Speciality list.\n"
+  },
+  {
+   "n": "T4 files matched by patient name",
+   "pass": false,
+   "info": "||| Error"
+  }
+ ]
+}

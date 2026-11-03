@@ -1,0 +1,223 @@
+[
+ {
+  "name": "DR C P SINGHAL",
+  "reg": "7398/1982",
+  "dept": "Obs & Gynae",
+  "speciality": "Obstetrics and Gynaecology",
+  "type": "PG",
+  "rmc": "1892"
+ },
+ {
+  "name": "DR LOKESH SINGHAL",
+  "reg": "30958/14905",
+  "dept": "Obs & Gynae",
+  "speciality": "Obstetrics and Gynaecology",
+  "type": "PG",
+  "rmc": "14905"
+ },
+ {
+  "name": "DR JALASH SINGHAL",
+  "reg": "33905/12351",
+  "dept": "Radiology",
+  "speciality": "Any Other Speciality not mentioned above",
+  "type": "PG"
+ },
+ {
+  "name": "DR PRADEEP SARDA",
+  "reg": "5955/2253",
+  "dept": "Medicine",
+  "speciality": "General Medicine",
+  "type": "PG",
+  "rmc": "2253"
+ },
+ {
+  "name": "DR B C KARNAWAT",
+  "reg": "5614/2231",
+  "dept": "Medicine",
+  "speciality": "General Medicine",
+  "type": "PG",
+  "rmc": "2231"
+ },
+ {
+  "name": "DR MAHAVEER MALI",
+  "reg": "34688/17569",
+  "dept": "Orthopedic",
+  "speciality": "Orthopaedics",
+  "type": "PG",
+  "rmc": "17569"
+ },
+ {
+  "name": "DR GUNJAN KAPIL BANSAL",
+  "reg": "27967/23853",
+  "dept": "PATHOLOGY",
+  "speciality": "Any Other Speciality not mentioned above",
+  "type": "PG"
+ },
+ {
+  "name": "DR DEOSHREE SOLANKI",
+  "reg": "33913/23579",
+  "dept": "PATHOLOGY",
+  "speciality": "Any Other Speciality not mentioned above",
+  "type": "PG"
+ },
+ {
+  "name": "DR TEJPAL GHASAL",
+  "reg": "41609/16818",
+  "dept": "Surgery",
+  "speciality": "General Surgery",
+  "type": "PG",
+  "rmc": "16818"
+ },
+ {
+  "name": "DR R C SINGHVI",
+  "reg": "3081/2217",
+  "dept": "Paediatrician",
+  "speciality": "Paediatric Medicine",
+  "type": "PG",
+  "rmc": "2217"
+ },
+ {
+  "name": "DR VEENA LAXMI",
+  "reg": "72806/30456",
+  "dept": "Paediatrician",
+  "speciality": "Paediatric Medicine",
+  "type": "PG",
+  "rmc": "30456"
+ },
+ {
+  "name": "DR DILIP TAK",
+  "reg": "4117/14831",
+  "dept": "Medicine",
+  "speciality": "General Medicine",
+  "type": "PG",
+  "rmc": "4117"
+ },
+ {
+  "name": "DR PRADEEP JAIN",
+  "reg": "13068/3208",
+  "dept": "Derma",
+  "speciality": "Any Other Speciality not mentioned above",
+  "type": "PG"
+ },
+ {
+  "name": "DR RAHUL VASWANI",
+  "reg": "33109/21825",
+  "dept": "Ophthal",
+  "speciality": "Ophthalmology",
+  "type": "PG",
+  "rmc": "21825"
+ },
+ {
+  "name": "DR SHWETA PUROHIT",
+  "reg": "A-4451",
+  "dept": "Dentistry",
+  "speciality": "Dental",
+  "type": "PG",
+  "rmc": "A-4451"
+ },
+ {
+  "name": "DR ROHIT TAAK",
+  "reg": "36423/21680",
+  "dept": "Medicine",
+  "speciality": "General Medicine",
+  "type": "PG"
+ },
+ {
+  "name": "DR IMRAN TAGALA",
+  "reg": "L-57239",
+  "dept": "Physiotherapy",
+  "speciality": "Physical Medicine and Rehabilitation",
+  "type": "PG"
+ },
+ {
+  "name": "DR SWATI SINGHAL",
+  "reg": "41092/30320",
+  "dept": "Anesthesiology",
+  "speciality": "Any Other Speciality not mentioned above",
+  "type": "PG"
+ },
+ {
+  "name": "DR ALOK JAIN",
+  "reg": "16285/13535",
+  "dept": "Nephrology",
+  "speciality": "Nephrology",
+  "type": "PG"
+ },
+ {
+  "name": "DR RAJKUMAR JAIN",
+  "reg": "34090/17605",
+  "dept": "Urology",
+  "speciality": "Urology",
+  "type": "PG"
+ },
+ {
+  "name": "DR RAJESH GAUR",
+  "reg": "21068/8776",
+  "dept": "Anesthesia",
+  "speciality": "Any Other Speciality not mentioned above",
+  "type": "PG"
+ },
+ {
+  "name": "DR GIRIRAJ PRASAD TRIVEDI",
+  "reg": "32984/20857",
+  "dept": "Otolaryngology",
+  "speciality": "ENT",
+  "type": "PG"
+ },
+ {
+  "name": "DR YUNUS",
+  "reg": "50131/32326",
+  "dept": "MEDICAL OFFICER",
+  "speciality": "General Medicine",
+  "type": "PG"
+ },
+ {
+  "name": "DR RAHUL KUMAR VERMA",
+  "reg": "61829",
+  "dept": "MEDICAL OFFICER",
+  "speciality": "General Medicine",
+  "type": "UG"
+ },
+ {
+  "name": "DR NAVEEN PRAJAPATI",
+  "reg": "77279",
+  "dept": "MEDICAL OFFICER",
+  "speciality": "General Medicine",
+  "type": "UG"
+ },
+ {
+  "name": "DR AMTA CHARAN",
+  "reg": "50415",
+  "dept": "MEDICAL OFFICER",
+  "speciality": "General Medicine",
+  "type": "UG"
+ },
+ {
+  "name": "DR NIDHI SANKHLA",
+  "reg": "69381",
+  "dept": "MEDICAL OFFICER",
+  "speciality": "General Medicine",
+  "type": "UG"
+ },
+ {
+  "name": "DR MUKESH KUMAR GODARA",
+  "reg": "51405",
+  "dept": "MEDICAL OFFICER",
+  "speciality": "General Medicine",
+  "type": "UG"
+ },
+ {
+  "name": "DR ABHAY SINGH CHOUHAN",
+  "reg": "51501",
+  "dept": "MEDICAL OFFICER",
+  "speciality": "General Medicine",
+  "type": "UG"
+ },
+ {
+  "name": "DR KAMAL ARORA",
+  "reg": "8156",
+  "dept": "MEDICAL OFFICER",
+  "speciality": "General Medicine",
+  "type": "UG"
+ }
+]

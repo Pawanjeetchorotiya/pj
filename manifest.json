@@ -1,0 +1,63 @@
+{
+  "manifest_version": 3,
+  "name": "PJ Auto OPD Claim",
+  "version": "3.2.0",
+  "description": "Makes the RGHS OPD claim list from the Hospedia report and fills the RGHS claim form. You check the form and press Submit yourself.",
+  "permissions": [
+    "storage",
+    "unlimitedStorage"
+  ],
+  "host_permissions": [
+    "https://rghs.rajasthan.gov.in/*",
+    "http://117.211.8.251/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "PJ Auto OPD Claim - show / hide panel",
+    "default_icon": {
+      "16": "icons/16.png",
+      "32": "icons/32.png",
+      "48": "icons/48.png",
+      "128": "icons/128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://rghs.rajasthan.gov.in/RGHS/tmsOPDDetails*"
+      ],
+      "js": [
+        "lib/xlsx.full.min.js",
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "http://117.211.8.251/*"
+      ],
+      "js": [
+        "hospedia.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "data/*.json"
+      ],
+      "matches": [
+        "https://rghs.rajasthan.gov.in/*"
+      ]
+    }
+  ]
+}
