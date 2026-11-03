@@ -1,4 +1,4 @@
-PJ Auto OPD Claim  (v3.2)
+PJ Auto OPD Claim  (v3.3)
 =========================
 
 WHAT IT DOES
@@ -42,8 +42,23 @@ THE PANEL
   - Toolbar icon: show / hide the panel. On Hospedia it makes the list.
     On any other tab it switches to (or opens) the RGHS page.
 
+CLAIM REGISTER (DAILY / MONTHLY EXCEL)
+  ⋯ menu > "Claim register" (or Alt+E). Choose Daily (a date), Monthly
+  (a month) or All, and press Download Excel. Columns:
+    Month | Year | Patient Name | Age | RGHS Card No | TID | TID Creation Date |
+    Treating Doctor | Hospital Claim Amount (RGHS) | Hospedia Billing Amount |
+    Difference (Hospedia - Claim) | Consult | X-Ray | CT | USG | CBCT | OPG |
+    OCT | Other | Lab
+  - A TOTAL row is at the bottom. Monthly and All also have a "Day wise" sheet.
+  - Hospedia billing and the Consult ... Lab amounts come from the Hospedia
+    report. Claim amount, age, card no, TID date and the verified doctor are
+    read from the RGHS page when the tool fills the claim.
+  - The day of a claim = TID creation date (or the OPD date if that is not known).
+  - The register keeps every TID. "Clear list" does not remove it.
+
 KEYS
   Alt+N  fill next TID        Alt+T  type text        Alt+M  minimise
+  Alt+E  claim register (Excel)
   Ctrl+Enter  save text & next                       Esc    close text box
 
 WHAT STAYS MANUAL (and why)

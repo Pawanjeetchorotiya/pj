@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "PJ Auto OPD Claim",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "Makes the RGHS OPD claim list from the Hospedia report and fills the RGHS claim form. You check the form and press Submit yourself.",
   "permissions": [
     "storage",
@@ -36,6 +36,7 @@
       ],
       "js": [
         "lib/xlsx.full.min.js",
+        "engine.js",
         "content.js"
       ],
       "run_at": "document_idle"

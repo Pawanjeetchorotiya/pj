@@ -73,6 +73,10 @@ const SHIM = `
   ok('H4 Any Other doctor -> real speciality text', /any other/i.test(d.speciality) && d.otherSpeciality === 'Dermatology' && d.docSpeciality === 'Dermatology', JSON.stringify(d));
   ok('H5 two CT -> PRE-AUTH', /CT/.test(by('2026103013724775').preAuth || ''), by('2026103013724775').preAuth);
   ok('H6 summary card shows counts', /3\s*claims made/.test(await page.locator('#pj-hos .card').innerText()), await page.locator('#pj-hos .card').innerText());
+  const reg = st.pjRegister || {};
+  const c1 = (reg['2026103013724771'] || {}).cat || {};
+  ok('H8 register: Hospedia bill 671 = consult 350 + X-ray 293 + lab 28', reg['2026103013724771']?.hospBill === 671 && c1.consult === 350 && c1.xray === 293 && c1.lab === 28, JSON.stringify(reg['2026103013724771']));
+  ok('H9 register: two CT scans under CT', (reg['2026103013724775'] || {}).cat?.ct === 2501, JSON.stringify(reg['2026103013724775']));
   ok('H7 no page errors', !errs.length, errs.join('; '));
   console.log(`\n${res.filter(Boolean).length}/${res.length} passed`);
   await browser.close();

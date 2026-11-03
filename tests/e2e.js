@@ -64,10 +64,10 @@ async function main() {
   const sheet = path.join(OUT, 'claims.xlsx'); makeSheet(sheet);
   const scans = makeScans(path.join(OUT, 'scans'));
   const lib = fs.readFileSync(path.join(ROOT, 'lib/xlsx.full.min.js'), 'utf8');
-  const content = fs.readFileSync(path.join(ROOT, 'content.js'), 'utf8');
+  const content = fs.readFileSync(path.join(ROOT, 'engine.js'), 'utf8') + '\n;' + fs.readFileSync(path.join(ROOT, 'content.js'), 'utf8');
 
   const browser = await chromium.launch();
-  const ctx = await browser.newContext({ viewport: { width: 1400, height: 900 }, deviceScaleFactor: SHOTS ? 2 : 1 });
+  const ctx = await browser.newContext({ viewport: { width: 1400, height: 900 }, deviceScaleFactor: SHOTS ? 2 : 1, acceptDownloads: true });
   await ctx.route('https://rghs.rajasthan.gov.in/**', (route) => {
     const u = new globalThis.URL(route.request().url());
     if (u.pathname.startsWith('/__mock/')) return route.fulfill({ path: path.join(ROOT, 'data', path.basename(u.pathname)) });
@@ -175,6 +175,29 @@ async function main() {
   if (SHOTS) {
     await page.screenshot({ path: path.join(OUT, '5-final.png') });
   }
+
+  // T8 - claim register export (monthly), columns in the asked order
+  await page.locator('#pj-auto-opd [data-a=more]').click();
+  await page.locator('#pj-auto-opd [data-a=export]').click();
+  await page.locator('#pj-auto-opd .seg [data-k=month]').click();
+  await page.locator('#pj-auto-opd .exm').fill('2026-10');
+  await page.waitForTimeout(500);
+  if (SHOTS) await page.screenshot({ path: path.join(OUT, '7-export.png') });
+  const [dl] = await Promise.all([page.waitForEvent('download'), page.locator('#pj-auto-opd [data-a=exgo]').click()]);
+  const xf = path.join(OUT, dl.suggestedFilename()); await dl.saveAs(xf);
+  const wb = XLSX.read(fs.readFileSync(xf), { type: 'buffer' });
+  const aoa = XLSX.utils.sheet_to_json(wb.Sheets.Register, { header: 1, defval: '' });
+  const H = aoa[0].join('|');
+  ok('T8 register headers in order (Month ... Lab last)', H === 'Month|Year|Patient Name|Age|RGHS Card No|TID|TID Creation Date|Treating Doctor|Hospital Claim Amount (RGHS)|Hospedia Billing Amount|Difference (Hospedia - Claim)|Consult|X-Ray|CT|USG|CBCT|OPG|OCT|Other|Lab', H);
+  const g = aoa.find((r) => String(r[5]) === TIDS.good) || [];
+  ok('T8 good TID row: Oct 2026, age, card, TID date, doctor', g[0] === 'October' && g[1] === 2026 && g[2] === 'BHANU PRATAP TANWAR' && String(g[3]) === '34' && g[4] === 'RJ1234567890' && g[6] === '28-10-2026' && g[7] === 'DR MAHAVEER MALI', JSON.stringify(g));
+  ok('T8 claim 671 / Hospedia 671 / diff 0 / consult 350 xray 293 lab 28', g[8] === 671 && g[9] === 671 && g[10] === 0 && g[11] === 350 && g[12] === 293 && g[19] === 28, JSON.stringify(g.slice(8)));
+  ok('T8 five claims + total row + Day wise sheet', aoa.length === 7 && /TOTAL \(5 claims\)/.test(aoa[6][2]) && !!wb.Sheets['Day wise'], `${aoa.length} ${aoa[aoa.length - 1][2]} ${wb.SheetNames}`);
+  // daily export of a day with nothing in it is blocked
+  await page.locator('#pj-auto-opd .seg [data-k=day]').click();
+  await page.locator('#pj-auto-opd .exd').fill('2026-10-29');
+  await page.waitForTimeout(400);
+  ok('T8 empty day -> download disabled', await page.locator('#pj-auto-opd [data-a=exgo]').isDisabled(), '');
 
   const pass = res.filter((r) => r.pass).length;
   console.log(`\n${pass}/${res.length} passed`);

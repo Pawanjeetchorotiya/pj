@@ -474,6 +474,98 @@
     b.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
+  // ---------- details shown on the portal after Search (age, card, TID date) ----------
+  // The portal's field ids are not known for sure, so look by id first and then by the label text next to the value.
+  const FIELD_LABELS = {
+    patient: ['patient name', 'beneficiary name', 'name of patient', 'name of beneficiary'],
+    age: ['age', 'patient age', "patient's age", 'age (years)', 'age(years)', 'age (yrs)', 'age(yrs)', 'age/gender', 'age / gender', 'age/sex', 'age / sex'],
+    card: ['card no', 'rghs card no', 'card number', 'rghs card number', 'rghs id', 'rghs card', 'card id', 'jan aadhaar / rghs card no', 'rghs card id'],
+    tidDate: ['tid date', 'tid creation date', 'tid created date', 'tid created on', 'transaction date', 'transaction creation date', 'transaction created date',
+      'transaction id date', 'txn date', 'created date', 'creation date', 'created on', 'tid generation date', 'tid generated date', 'tid generated on'],
+  };
+  const FIELD_IDS = {
+    patient: /^(pat(ient)?_?name|pname|ben(eficiary)?_?name|txtpatientname|lblpatientname)$/i,
+    age: /(^|_|-)(pat(ient)?_?|ben_?)?age$|^(txt|lbl)(pat(ient)?)?age$|patientage|benage/i,
+    card: /(^|_|-)card_?(no|number|id)?$|rghs_?card|cardno|cardnumber/i,
+    tidDate: /(tid|trans|txn)(action)?_?(id_?)?(creat\w*|gen\w*)?_?(date|dt|on)$|creat\w*_?(date|on)$/i,
+  };
+  const FIELD_OK = {
+    patient: (v) => /[A-Za-z]{2,}/.test(v) && v.length < 80,
+    age: (v) => /^\s*\d{1,3}\b/.test(v),
+    card: (v) => /[A-Za-z0-9]{5,}/.test(v) && v.length < 40,
+    tidDate: (v) => /\d{1,4}[-/. ][A-Za-z0-9]{1,3}[-/. ]\d{2,4}/.test(v),
+  };
+  const labelKey = (t) => String(t || '').toLowerCase().replace(/[*:.\-]+\s*$/, '').replace(/[*.:]/g, '').replace(/\s+/g, ' ').trim();
+  function elValue(el) {
+    if (!el) return '';
+    if (/^(INPUT|TEXTAREA)$/.test(el.tagName)) return el.type === 'hidden' ? '' : el.value;
+    if (el.tagName === 'SELECT') return el.value ? (el.selectedOptions[0]?.text || '') : '';
+    const inner = el.querySelector && el.querySelector('input:not([type=hidden]),select,textarea');
+    if (inner) return elValue(inner);
+    return el.innerText || el.textContent || '';
+  }
+  function portalInfo() {
+    const out = {};
+    const clean = (v) => String(v || '').replace(/\s+/g, ' ').trim();
+    const els = [...document.querySelectorAll('label,td,th,span,div,b,strong,p,dt,dd,li,font,h5,h6')]
+      .filter((e) => !host.contains(e) && e.childElementCount <= 3 && (e.innerText || '').length < 90);
+    for (const k of Object.keys(FIELD_LABELS)) {
+      const ok = (v) => (v = clean(v)) && FIELD_OK[k](v) ? v : '';
+      let v = '';
+      for (const el of document.querySelectorAll('input,select,textarea,span,td,label,div')) {   // 1. by id / name
+        if (host.contains(el)) continue;
+        const id = el.id || el.getAttribute('name') || '';
+        if (id && FIELD_IDS[k].test(id) && (v = ok(elValue(el)))) break;
+      }
+      if (!v) {
+        for (const el of els) {   // 2. by the label in front of the value
+          const t = clean(el.innerText);
+          const i = t.indexOf(':');
+          if (i > 0 && FIELD_LABELS[k].includes(labelKey(t.slice(0, i))) && (v = ok(t.slice(i + 1)))) break;   // "Age : 34"
+          if (!FIELD_LABELS[k].includes(labelKey(t))) continue;
+          const f = el.htmlFor && document.getElementById(el.htmlFor);
+          const cands = [f, el.nextElementSibling, el.parentElement && el.parentElement.nextElementSibling, el.closest('td,th') && el.closest('td,th').nextElementSibling];
+          for (const c of cands) if (c && !c.contains(el) && (v = ok(elValue(c)))) break;
+          if (v) break;
+        }
+      }
+      if (k === 'age' && v) v = v.match(/\d{1,3}/)[0];
+      if (k === 'tidDate' && v) { const d = ClaimEngine.parseDMY(v.replace(/^[^0-9]*/, '')); v = d ? `${String(d.d).padStart(2, '0')}-${String(d.m).padStart(2, '0')}-${d.y}` : v; }
+      out[k] = v;
+    }
+    return out;
+  }
+  // ---------- claim register: one record per TID, kept for the daily / monthly Excel ----------
+  async function regUpdate(list, onlyEmpty) {
+    const reg = (await store.get('pjRegister')) || {};
+    for (const [tid, patch] of list) {
+      const r = reg[tid] || (reg[tid] = { tid });
+      for (const [k, v] of Object.entries(patch)) {
+        if (v === '' || v == null) continue;
+        if (onlyEmpty && r[k] !== undefined && r[k] !== '') continue;
+        r[k] = v;
+      }
+      r.updated = Date.now();
+    }
+    await store.set('pjRegister', reg);
+    return reg;
+  }
+  async function recordFromPortal(row, total) {
+    const p = portalInfo();
+    const pk = [...document.querySelectorAll('#packageDetailtable tbody tr')]
+      .map((tr) => ({ name: tr.cells[1]?.innerText || '', amount: parseFloat(String(tr.cells[2]?.innerText || '').replace(/[^\d.]/g, '')) || 0 }));
+    const verified = $('opddocname')?.value || '';
+    if (!row.patient && p.patient) row.patient = p.patient;
+    await regUpdate([[row.tid, {
+      patient: row.patient || p.patient, age: p.age, card: p.card, tidDate: p.tidDate, prescDate: row.prescDate,
+      doctor: verified || row.doctor, doctorVerified: verified ? 1 : '', claimAmt: total,
+      hospBill: row.hospBill != null && row.hospBill !== '' ? row.hospBill : (row.bill ? parseFloat(row.bill) : ''),
+      cat: row.cat || ClaimEngine.categorize(pk), filledAt: Date.now(),
+    }]]);
+    const got = ['age', 'card', 'tidDate'].filter((k) => p[k]);
+    log(`Register: claim Rs ${total}` + (got.length ? ` · ${got.map((k) => `${k} ${p[k]}`).join(' · ')}` : ' · age / card / TID date not found on the page'));
+  }
+
   // ---------- panel UI ----------
   const host = document.createElement('div');
   host.id = 'pj-auto-opd';
@@ -608,6 +700,19 @@
     .docs .btn.sel{background:var(--pri);color:#fff;border-color:var(--pri)}
     .hint{font-size:10.5px;color:var(--mute)}
 
+    /* export */
+    .ex{background:var(--card);border:1.5px solid #16a34a;border-radius:14px;padding:10px;display:none;flex-direction:column;gap:8px;box-shadow:0 0 0 4px rgba(22,163,74,.1)}
+    .ex.on{display:flex}
+    .ex .eh b{flex:1;font-size:13px}
+    .seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--soft);border-radius:10px;padding:3px;gap:3px}
+    .seg button{border:0;background:none;border-radius:8px;padding:6px;font-weight:700;font-size:12px;cursor:pointer;color:var(--mute)}
+    .seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 4px rgba(15,23,42,.15)}
+    .ex input[type=date],.ex input[type=month]{font:12px inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:5px 8px}
+    .exs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+    .exs div{background:var(--soft);border-radius:10px;padding:6px;text-align:center}
+    .exs b{display:block;font-size:15px}.exs span{font-size:10.5px;color:var(--mute)}
+    .exs .neg b{color:var(--bad)}
+
     /* log */
     details.lg{background:var(--card);border:1px solid var(--line);border-radius:12px}
     details.lg summary{cursor:pointer;padding:6px 10px;font-size:12px;font-weight:600;color:var(--mute);list-style:none;display:flex;gap:6px;align-items:center}
@@ -669,6 +774,17 @@
           <span class="sp"></span><span class="hint">Ctrl+Enter = save &amp; next</span></div>
       </div>
 
+      <div class="ex" role="dialog" aria-label="Export claim register">
+        <div class="eh"><span>📊</span><b>Claim register (Excel)</b><button class="btn sm" data-a="exclose" title="Close (Esc)">✕</button></div>
+        <div class="seg" role="tablist">
+          <button data-k="day" class="on">Daily</button><button data-k="month">Monthly</button><button data-k="all">All</button>
+        </div>
+        <div class="row"><input type="date" class="exd"><input type="month" class="exm"><span class="sp"></span><span class="exn hint"></span></div>
+        <div class="exs"></div>
+        <div class="row"><button class="btn pri" data-a="exgo">⬇ Download Excel</button><span class="sp"></span>
+          <span class="hint">Month · Year · Patient · Age · Card · TID … Lab</span></div>
+      </div>
+
       <div class="now"><div class="nt"></div><div class="trail"></div><div class="ns"></div></div>
       <div class="warn"><div class="wh">⚠ Please check before you submit</div><ul></ul></div>
 
@@ -685,6 +801,7 @@
         <span class="sp"></span>
         <div class="menu"><button class="btn ic" data-a="more" title="More" aria-label="More">⋯</button>
           <div class="mlist">
+            <button data-a="export">📊 Claim register — daily / monthly Excel (Alt+E)</button>
             <button data-a="text">✎ Type text for all (Alt+T)</button>
             <button data-a="report">⬇ Download status report (Excel)</button>
             <button data-a="template">⬇ Blank Excel template</button>
@@ -898,6 +1015,7 @@
     for (const n of (row.notes || []).slice(0, 4)) c.warn.push(n);
     const warn = [...new Set(c.warn)];
     log(`Claim amount as per packages: Rs ${c.total}`);
+    try { await recordFromPortal(row, c.total); } catch (e) { log('! Could not save to the register: ' + e.message); }
     showWarn(warn);
     showStep(row, 'check', warn.length ? 'fail' : 'done');
     await setStatus(row.tid, warn.length ? 'Check' : 'Ready', warn.join(' '));
@@ -917,6 +1035,7 @@
       if (/success|submitted/i.test(t)) {
         log(`Submitted: ${currentTid}`);
         showWarn([]);
+        try { await regUpdate([[currentTid, { submittedAt: Date.now() }]]); } catch (e) { /* ignore */ }
         await setStatus(currentTid, 'Done', t);
       }
     }
@@ -1033,6 +1152,7 @@
       for (const r of fresh) { const o = old.get(r.tid); if (o) { r.complaints = r.complaints || o.complaints || ''; r.diagnosis = r.diagnosis || o.diagnosis || ''; } }
       rows = fresh;
       await store.set('pjRows', rows);
+      await regUpdate(rows.map((r) => [r.tid, { patient: r.patient, prescDate: r.prescDate, doctor: r.doctor, hospBill: r.bill ? parseFloat(r.bill) : '' }]), true);
       log(`Loaded ${rows.length} TIDs from ${f.name}.` + (fresh.skipped ? ` ${fresh.skipped} row(s) skipped - TID missing or wrong.` : ''));
       toast(`📄 ${rows.length} claims loaded from ${f.name}` + (fresh.skipped ? ` · ${fresh.skipped} skipped` : ''), fresh.skipped ? 'warn' : '');
       const numTid = rows.filter((r) => (r.notes || []).some((n) => /saved as a number/.test(n))).length;
@@ -1203,6 +1323,67 @@
     render();
   };
 
+  // ---------- claim register export (daily / monthly) ----------
+  let exKind = 'day';
+  const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+  function exPeriod() {
+    if (exKind === 'all') return { kind: 'all' };
+    if (exKind === 'month') { const [y, m] = (q('.exm').value || today().slice(0, 7)).split('-').map(Number); return { kind: 'month', y, m }; }
+    const [y, m, d] = (q('.exd').value || today()).split('-').map(Number); return { kind: 'day', y, m, d };
+  }
+  const rs = (n) => '₹' + Math.round(n || 0).toLocaleString('en-IN');
+  async function exPreview() {
+    q('.exd').style.display = exKind === 'day' ? '' : 'none';
+    q('.exm').style.display = exKind === 'month' ? '' : 'none';
+    root.querySelectorAll('.seg button').forEach((b) => b.classList.toggle('on', b.dataset.k === exKind));
+    const reg = Object.values((await store.get('pjRegister')) || {});
+    const sh = ClaimEngine.registerSheet(reg, exPeriod());
+    const tot = sh.rows[sh.rows.length - 1];
+    q('.exn').textContent = `${sh.count} claim${sh.count === 1 ? '' : 's'}`;
+    q('.exs').innerHTML = `<div><b>${rs(tot[8])}</b><span>RGHS claim</span></div><div><b>${rs(tot[9])}</b><span>Hospedia bill</span></div>`
+      + `<div class="${(tot[10] || 0) > 0 ? 'neg' : ''}"><b>${rs(tot[10])}</b><span>difference</span></div>`;
+    q('[data-a=exgo]').disabled = !sh.count;
+    return sh;
+  }
+  function openExport() {
+    if (editing) closeEditor();
+    if (!q('.exd').value) q('.exd').value = today();
+    if (!q('.exm').value) q('.exm').value = today().slice(0, 7);
+    q('.ex').classList.add('on');
+    exPreview();
+  }
+  q('[data-a=export]').onclick = openExport;
+  q('[data-a=exclose]').onclick = () => q('.ex').classList.remove('on');
+  root.querySelectorAll('.seg button').forEach((b) => (b.onclick = () => { exKind = b.dataset.k; exPreview(); }));
+  q('.exd').onchange = exPreview; q('.exm').onchange = exPreview;
+  q('[data-a=exgo]').onclick = async () => {
+    const sh = await exPreview();
+    if (!sh.count) { toast('No claims in this period.', 'info'); return; }
+    const p = exPeriod();
+    const money = (ws, rows, from) => {   // amounts as numbers with Indian grouping
+      for (let r = 1; r < rows.length; r++) for (let c = from; c < rows[0].length; c++) {
+        const cell = ws[XLSX.utils.encode_cell({ r, c })]; if (cell && cell.t === 'n') cell.z = '#,##0.00';
+      }
+    };
+    const ws = XLSX.utils.aoa_to_sheet(sh.rows);
+    ws['!cols'] = [10, 6, 24, 5, 16, 18, 13, 24, 13, 13, 13].map((w) => ({ wch: w })).concat(ClaimEngine.CATS.map(() => ({ wch: 9 })));
+    ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: sh.rows.length - 2, c: sh.rows[0].length - 1 } }) };
+    money(ws, sh.rows, 8);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Register');
+    if (p.kind !== 'day') {
+      const wd = XLSX.utils.aoa_to_sheet(sh.days);
+      wd['!cols'] = [{ wch: 12 }, { wch: 7 }].concat(sh.days[0].slice(2).map(() => ({ wch: 12 })));
+      money(wd, sh.days, 2);
+      XLSX.utils.book_append_sheet(wb, wd, 'Day wise');
+    }
+    const name = p.kind === 'day' ? `${p.y}-${String(p.m).padStart(2, '0')}-${String(p.d).padStart(2, '0')}`
+      : p.kind === 'month' ? `${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][p.m - 1]}-${p.y}` : 'all';
+    XLSX.writeFile(wb, `RGHS-OPD-register-${name}.xlsx`);
+    log(`Register exported: ${sh.count} claims (${name}).`);
+    toast(`📊 Register downloaded · ${sh.count} claims`);
+  };
+
   // ---------- keyboard ----------
   const typing = (e) => /^(INPUT|TEXTAREA|SELECT)$/.test((e.composedPath()[0] || {}).tagName || '');
   addEventListener('keydown', (e) => {
@@ -1210,6 +1391,8 @@
     if (e.altKey && !e.ctrlKey && (e.key === 'n' || e.key === 'N')) { e.preventDefault(); q('[data-a=next]').click(); }
     else if (e.altKey && !e.ctrlKey && (e.key === 't' || e.key === 'T')) { e.preventDefault(); q('[data-a=text]').click(); }
     else if (e.altKey && !e.ctrlKey && (e.key === 'm' || e.key === 'M')) { e.preventDefault(); q('.mn').click(); }
+    else if (e.altKey && !e.ctrlKey && (e.key === 'e' || e.key === 'E')) { e.preventDefault(); openExport(); }
+    else if (q('.ex').classList.contains('on') && e.key === 'Escape') { e.preventDefault(); q('.ex').classList.remove('on'); }
     else if (editing && e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); q('[data-a=save]').click(); }
     else if (editing && e.key === 'Escape') { e.preventDefault(); closeEditor(); }
     else if (e.key === '/' && !typing(e) && !editing) { e.preventDefault(); q('.srch').focus(); }

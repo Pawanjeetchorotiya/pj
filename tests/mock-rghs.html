@@ -25,6 +25,8 @@
     <div class="f"><label>Transaction ID</label><input id="transactionid"> <button type="button" onclick="Search()">SEARCH</button></div>
     <input type="hidden" id="transid">
     <div class="f">Patient: <b id="pname"></b></div>
+    <table id="pinfo" style="display:none;width:auto"><tr><td>Patient Name</td><td><span id="lblPN"></span></td><td>Age :</td><td><input id="txtA1" readonly></td></tr></table>
+    <div id="pinfo2" style="display:none"><label>RGHS Card No.</label> <span id="s9">RJ1234567890</span> &nbsp; <b>TID Creation Date : 28/10/2026 10:15 AM</b></div>
   </fieldset>
   <fieldset><legend>Doctor</legend>
     <div class="f"><label>Speciality</label><select id="opddepartment"></select> <input id="opddepttext" class="hide" placeholder="Other speciality"></div>
@@ -80,7 +82,10 @@
     fetch('/__mock/codes.json').then((r) => r.json()).then((c) => (CODES = c)),
   ]);
   const tid = S.getItem('mockTid');
-  if (tid) { $('transid').value = tid; $('transactionid').value = tid; $('pname').textContent = 'TEST PATIENT'; }
+  if (tid) {
+    $('transid').value = tid; $('transactionid').value = tid; $('pname').textContent = 'TEST PATIENT';
+    $('pinfo').style.display = ''; $('pinfo2').style.display = ''; $('lblPN').textContent = 'TEST PATIENT'; $('txtA1').value = '34 Y';
+  }
 
   function msg(t) { $('msgModal').querySelector('.modal-body').textContent = t; $('msgModal').classList.add('show'); }
   function hideM(id) { $(id).classList.remove('show'); }

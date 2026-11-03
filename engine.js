@@ -290,6 +290,87 @@
       c.complaints, c.diagnosis, c.bill, c.discount, c.matchKey, c.files[0], c.files[1], c.files[2], c.files[3]];
   }
 
-  root.ClaimEngine = { TEMPLATE_HEADERS, HOW_TO_FILL, parseRows, buildClaims, claimToRow, makeCodeIndex, codesFromLines, claimStatus, matchItem, findDoctor, rmcNo, doctorRmc, normItem, toDMY, tokens };
+  // ---------- claim register (Excel export) ----------
+  // Bill heads in the order the register shows them. Lab is always the last column.
+  const CATS = [['consult', 'Consult'], ['xray', 'X-Ray'], ['ct', 'CT'], ['usg', 'USG'], ['cbct', 'CBCT'], ['opg', 'OPG'], ['oct', 'OCT'], ['other', 'Other'], ['lab', 'Lab']];
+  const LAB_WORDS = /\b(blood|serum|urine|stool|sputum|glucose|sugar|cbc|haemogram|hemogram|haemoglobin|hemoglobin|hb|hba1c|esr|crp|thyroid|tsh|t3|t4|lipid|lft|kft|rft|liver function|kidney function|renal function|creatinine|urea|uric|bilirubin|sgot|sgpt|albumin|protein|calcium|sodium|potassium|electrolyte|vitamin|culture|smear|antigen|antibody|hbsag|hcv|hiv|vdrl|widal|dengue|malaria|typhoid|platelet|prothrombin|pt ?inr|aptt|cholesterol|triglyceride|amylase|lipase|ferritin|iron|b12|d3|psa|hcg|elisa|rapid|test|profile|cell count|grouping|rh typing|peripheral)\b/i;
+  function categoryOf(name, type) {
+    const n = ' ' + clean(name).toLowerCase() + ' ', t = clean(type).toUpperCase();
+    if (/APPOINTMENT|CONSULT/.test(t) || /consult|first visit|follow ?up|revisit/.test(n)) return 'consult';
+    if (/\bcbct\b|cone ?beam/.test(n)) return 'cbct';
+    if (/\bopg\b|orthopantomo|panoramic/.test(n)) return 'opg';
+    if (/\boct\b|optical coherence/.test(n)) return 'oct';
+    if (/\b(ct|cect|ncct|hrct|mdct)\b|computed tomo|ct ?scan|ct-/.test(n)) return 'ct';
+    if (/\busg\b|ultra ?sound|sonograph|sonography|doppler|\btvs\b/.test(n)) return 'usg';
+    if (/x[\s-]*ray|\bxray\b|radiograph|\bskiagram\b|\bfilms?\b|\b(ap|pa|lateral|oblique) views?\b/.test(n)) return 'xray';
+    if (/LAB|PATH/.test(t) || LAB_WORDS.test(n)) return 'lab';
+    return 'other';
+  }
+  /** lines: [{item|name, type, amount}] -> {consult, xray, ..., lab} amounts */
+  function categorize(lines) {
+    const out = {}; for (const [k] of CATS) out[k] = 0;
+    for (const l of lines || []) {
+      if (l.status === 'skip') continue;
+      const k = categoryOf(l.item || l.name || '', l.type || '');
+      out[k] = round2(out[k] + num(l.amount));
+    }
+    return out;
+  }
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  /** any date text -> {d, m, y} (portal and sheets write day first) */
+  function parseDMY(s) {
+    s = clean(s); let m;
+    if ((m = s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/))) return { d: +m[3], m: +m[2], y: +m[1] };
+    if ((m = s.match(/^(\d{1,2})[-/. ]([A-Za-z]{3})[A-Za-z]*[-/. ,]+(\d{4})/))) {
+      const mo = 'janfebmaraprmayjunjulaugsepoctnovdec'.indexOf(m[2].toLowerCase()) / 3 + 1;
+      return mo ? { d: +m[1], m: mo, y: +m[3] } : null;
+    }
+    if ((m = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/))) return { d: +m[1], m: +m[2], y: +m[3] };
+    return null;
+  }
+  const dmyText = (o) => o ? `${String(o.d).padStart(2, '0')}-${String(o.m).padStart(2, '0')}-${o.y}` : '';
+  /** the day a register record belongs to: TID creation date, else the OPD / bill date */
+  const recordDay = (r) => parseDMY(r.tidDate) || parseDMY(r.prescDate) || parseDMY(r.date);
+  const REGISTER_HEADERS = ['Month', 'Year', 'Patient Name', 'Age', 'RGHS Card No', 'TID', 'TID Creation Date', 'Treating Doctor',
+    'Hospital Claim Amount (RGHS)', 'Hospedia Billing Amount', 'Difference (Hospedia - Claim)'].concat(CATS.map((c) => c[1]));
+  /**
+   * records: register entries; period: {kind:'day', d,m,y} | {kind:'month', m,y} | {kind:'all'}
+   * returns {rows: [[...]] (header + data + total), days: [[...]] day-wise summary, count}
+   */
+  function registerSheet(records, period) {
+    const inP = (r) => {
+      if (!period || period.kind === 'all') return true;
+      const x = recordDay(r); if (!x) return false;
+      return x.y === period.y && x.m === period.m && (period.kind !== 'day' || x.d === period.d);
+    };
+    const key = (r) => { const x = recordDay(r); return x ? x.y * 10000 + x.m * 100 + x.d : 0; };
+    const list = records.filter(inP).sort((a, b) => key(a) - key(b) || String(a.tid).localeCompare(String(b.tid)));
+    const val = (v) => (v === '' || v == null ? '' : num(v));
+    const rows = [REGISTER_HEADERS.slice()];
+    const totals = new Array(REGISTER_HEADERS.length).fill('');
+    const byDay = new Map();
+    for (const r of list) {
+      const x = recordDay(r);
+      const claim = val(r.claimAmt), hosp = val(r.hospBill);
+      const diff = claim === '' || hosp === '' ? '' : round2(hosp - claim);
+      const cat = r.cat || {};
+      const line = [x ? MONTHS[x.m - 1] : '', x ? x.y : '', r.patient || '', r.age || '', r.card || '', String(r.tid), dmyText(parseDMY(r.tidDate)) || r.tidDate || '',
+        r.doctor || '', claim, hosp, diff].concat(CATS.map(([k]) => (cat[k] ? cat[k] : 0)));
+      rows.push(line);
+      for (let i = 8; i < line.length; i++) if (line[i] !== '') totals[i] = round2((totals[i] || 0) + line[i]);
+      const dk = x ? dmyText(x) : '(no date)';
+      const d = byDay.get(dk) || { n: 0, sums: new Array(line.length).fill(0) };
+      d.n++; for (let i = 8; i < line.length; i++) d.sums[i] = round2(d.sums[i] + (line[i] || 0));
+      byDay.set(dk, d);
+    }
+    totals[2] = `TOTAL (${list.length} claims)`;
+    rows.push(totals);
+    const days = [['Date', 'Claims'].concat(REGISTER_HEADERS.slice(8))];
+    for (const [dk, d] of byDay) days.push([dk, d.n].concat(d.sums.slice(8)));
+    return { rows, days, count: list.length };
+  }
+
+  root.ClaimEngine = { TEMPLATE_HEADERS, HOW_TO_FILL, parseRows, buildClaims, claimToRow, makeCodeIndex, codesFromLines, claimStatus, matchItem, findDoctor, rmcNo, doctorRmc, normItem, toDMY, tokens,
+    CATS, REGISTER_HEADERS, categoryOf, categorize, parseDMY, registerSheet };
   if (typeof module !== 'undefined') module.exports = root.ClaimEngine;
 })(typeof self !== 'undefined' ? self : globalThis);

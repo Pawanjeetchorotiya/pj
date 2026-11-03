@@ -37,6 +37,8 @@ function toRow(c) {
     matchKey: c.mr || '',
     notes: c.notes || [],
     preAuth: c.preAuth || '',
+    hospBill: c.bill,
+    cat: ClaimEngine.categorize(c.lines),
     source: 'hospedia',
   };
 }
@@ -58,7 +60,15 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           if (o) { r.complaints = o.complaints || r.complaints; r.diagnosis = o.diagnosis || r.diagnosis; }
         }
         const merged = rows.concat(old.filter((r) => !rows.some((n) => n.tid === r.tid)));
-        await chrome.storage.local.set({ pjRows: merged, pjFromHospedia: Date.now() });
+        // the claim register (for the Excel export) keeps every TID, even after the list is cleared
+        const reg = (await chrome.storage.local.get('pjRegister')).pjRegister || {};
+        for (const r of rows) {
+          reg[r.tid] = Object.assign(reg[r.tid] || {}, {
+            tid: r.tid, patient: r.patient, prescDate: r.prescDate, hospBill: r.hospBill, cat: r.cat,
+            doctor: (reg[r.tid] && reg[r.tid].doctorVerified) ? reg[r.tid].doctor : r.doctor, mr: r.matchKey, updated: Date.now(),
+          });
+        }
+        await chrome.storage.local.set({ pjRows: merged, pjRegister: reg, pjFromHospedia: Date.now() });
         const by = (k) => claims.filter((c) => c.status === k).length;
         sendResponse({ count: rows.length, noTid: (claims.noTid || []).length, ready: by('ready'), check: by('check'), stop: by('stop'),
           preAuth: claims.filter((c) => c.preAuth).length, noDoctor: claims.filter((c) => !c.doctorFound).length });
