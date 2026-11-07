@@ -52,8 +52,10 @@ CLAIM STATUS (same as before)
   Copy = WhatsApp summary. Red badge in the top bar = TIDs waiting for upload.
 
 MOBILE APP
-  The app/ folder is an installable phone app (works offline, data stays on the phone).
-  Open it on the phone (see the link given with this version), then browser menu > "Add to Home screen".
+  Phone app (made with Apper):  https://preview--rghs-daily-effectiv.apper.so
+  Open it in Chrome on the phone, then browser menu > "Add to Home screen".
+  (The app/ folder of this extension is the same app for offline use; it can also be hosted on
+  GitHub Pages: Settings > Pages > branch main / root -> https://pawanjeetchorotiya.github.io/pj/app/ )
   Bring data to the phone in any of these ways (button "Import files"):
     - the Transaction ID Tracker Excel downloaded from RGHS
     - the Hospedia report exported to Excel
