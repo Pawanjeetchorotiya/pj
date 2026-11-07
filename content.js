@@ -704,6 +704,7 @@
     .ex{background:var(--card);border:1.5px solid #16a34a;border-radius:14px;padding:10px;display:none;flex-direction:column;gap:8px;box-shadow:0 0 0 4px rgba(22,163,74,.1)}
     .ex.on{display:flex}
     .ex .eh b{flex:1;font-size:13px}
+    a.btn{text-decoration:none;color:inherit;display:inline-block}
     .seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--soft);border-radius:10px;padding:3px;gap:3px}
     .seg button{border:0;background:none;border-radius:8px;padding:6px;font-weight:700;font-size:12px;cursor:pointer;color:var(--mute)}
     .seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 4px rgba(15,23,42,.15)}
@@ -782,7 +783,8 @@
         <div class="row"><input type="date" class="exd"><input type="month" class="exm"><span class="sp"></span><span class="exn hint"></span></div>
         <div class="exs"></div>
         <div class="row"><button class="btn pri" data-a="exgo">⬇ Download Excel</button><span class="sp"></span>
-          <span class="hint">Month · Year · Patient · Age · Card · TID … Lab</span></div>
+          <a class="btn sm" href="https://preview--claim-desk-creative.apper.so/import" target="_blank" rel="noopener" title="Open PJ Claim Desk and import this Excel there">🌐 Claim Desk</a></div>
+        <div class="hint">Online dashboard: download the Excel, then drop it on PJ Claim Desk → Import.</div>
       </div>
 
       <div class="now"><div class="nt"></div><div class="trail"></div><div class="ns"></div></div>
@@ -1381,7 +1383,7 @@
       : p.kind === 'month' ? `${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][p.m - 1]}-${p.y}` : 'all';
     XLSX.writeFile(wb, `RGHS-OPD-register-${name}.xlsx`);
     log(`Register exported: ${sh.count} claims (${name}).`);
-    toast(`📊 Register downloaded · ${sh.count} claims`);
+    toast(`📊 Register downloaded · ${sh.count} claims. Import it in PJ Claim Desk to see it online.`);
   };
 
   // ---------- keyboard ----------

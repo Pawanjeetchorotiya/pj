@@ -1,4 +1,4 @@
-PJ Auto OPD Claim  (v3.3)
+PJ Auto OPD Claim  (v3.4)
 =========================
 
 WHAT IT DOES
@@ -55,6 +55,15 @@ CLAIM REGISTER (DAILY / MONTHLY EXCEL)
     read from the RGHS page when the tool fills the claim.
   - The day of a claim = TID creation date (or the OPD date if that is not known).
   - The register keeps every TID. "Clear list" does not remove it.
+
+ONLINE DASHBOARD (PJ Claim Desk)
+  https://preview--claim-desk-creative.apper.so
+  Download the register (All, a day or a month), open Claim Desk > Import
+  and drop the Excel there. New TIDs become claims; TIDs already there get
+  their amounts refreshed. Claim Desk tracks status (Draft / Submitted /
+  Query / Approved / Paid / Rejected), RGHS queries with reply dates,
+  doctor-wise and day-wise reports, and daily / monthly Excel export.
+  Note: data you import there is stored online, not only in your Chrome.
 
 KEYS
   Alt+N  fill next TID        Alt+T  type text        Alt+M  minimise
