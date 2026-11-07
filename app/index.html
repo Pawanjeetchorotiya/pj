@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1e1b4b">
+<meta name="description" content="RGHS daily sheet: RGHS tracker + Hospedia bills -> month Excel, checks and payments. Works offline; data stays on this device.">
+<title>PJ RGHS Daily Sheet</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon192.png">
+<link rel="apple-touch-icon" href="icons/icon192.png">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="top">
+  <span class="logo" id="logo"></span>
+  <div class="tt"><b>PJ RGHS Daily Sheet</b><small id="mode">RGHS + Hospedia → Excel</small></div>
+  <button class="ib" id="themeBtn" title="Light / dark" aria-label="Light or dark theme">◐</button>
+</header>
+
+<main>
+  <section class="controls card">
+    <label class="fld"><span>Month</span><input type="month" id="month"></label>
+    <div class="fld"><span>Department</span><div class="seg" id="dept"><button data-v="OPD">OPD</button><button data-v="IPD">IPD</button><button data-v="DC">Day Care</button><button data-v="ALL">All</button></div></div>
+    <button class="tg" id="pendingTg" title="Also list TIDs that are not claimed yet (amount 0)"><span>Pending TIDs too</span><i class="sw"></i></button>
+  </section>
+
+  <section class="kpis" id="kpis"></section>
+
+  <section class="actions">
+    <button class="big xl" id="dlMonth"><i>⬇</i><span><b>Download month Excel</b><small id="dlMonthSub">31 day sheets + Summary + Check</small></span></button>
+    <button class="big" id="dlDay"><i>▦</i><span><b>Download this day</b><small id="dlDaySub">one sheet</small></span></button>
+    <label class="big imp"><i>⇪</i><span><b>Import files</b><small>RGHS / Hospedia / old daily sheet / backup</small></span>
+      <input type="file" id="file" multiple accept=".xlsx,.xls,.csv,.json"></label>
+  </section>
+
+  <section class="card">
+    <div class="h"><h2>Days</h2><span class="legend"><i class="d ok"></i>matched <i class="d wn"></i>needs check <i class="d no"></i>no Hospedia</span></div>
+    <div class="cal" id="cal"></div>
+  </section>
+
+  <section class="card">
+    <div class="h"><h2 id="dayTitle">Day</h2><input class="search" id="q" type="search" placeholder="Search name, TID, doctor…"></div>
+    <div id="dayBox"></div>
+  </section>
+
+  <section class="grid2">
+    <div class="card"><div class="h"><h2>Bill breakdown</h2><small id="catSub"></small></div><div id="cats"></div></div>
+    <div class="card"><div class="h"><h2>Treating doctors</h2></div><div id="docs"></div></div>
+  </section>
+
+  <section class="card">
+    <div class="h"><h2>Check <span class="cnt" id="chkCount">0</span></h2><div class="seg sm" id="chkKind"></div></div>
+    <div id="checks"></div>
+  </section>
+
+  <section class="card">
+    <details>
+      <summary><h2>Data on this device</h2></summary>
+      <div id="dataInfo"></div>
+      <div class="row">
+        <button class="btn" id="backup">⬇ Backup (JSON)</button>
+        <button class="btn danger" id="clearMonth">🗑 Clear this month</button>
+      </div>
+      <p class="note" id="howto"></p>
+    </details>
+  </section>
+  <footer id="foot"></footer>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="../lib/xlsx.full.min.js"></script>
+<script src="../shared.js"></script>
+<script src="../engine.js"></script>
+<script src="../sheet.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
