@@ -1,63 +1,60 @@
 {
   "manifest_version": 3,
-  "name": "PJ Auto OPD Claim",
-  "version": "3.2.0",
-  "description": "Makes the RGHS OPD claim list from the Hospedia report and fills the RGHS claim form. You check the form and press Submit yourself.",
-  "permissions": [
-    "storage",
-    "unlimitedStorage"
-  ],
+  "name": "PJ RGHS Suite",
+  "short_name": "PJ RGHS",
+  "version": "4.0.0",
+  "description": "RGHS claim status, OPD claim filler, payment summary and the daily RGHS + Hospedia Excel sheet - in one tool.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "PJ RGHS Suite",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["storage", "unlimitedStorage", "notifications"],
   "host_permissions": [
     "https://rghs.rajasthan.gov.in/*",
     "http://117.211.8.251/*"
   ],
-  "background": {
-    "service_worker": "background.js"
-  },
-  "action": {
-    "default_title": "PJ Auto OPD Claim - show / hide panel",
-    "default_icon": {
-      "16": "icons/16.png",
-      "32": "icons/32.png",
-      "48": "icons/48.png",
-      "128": "icons/128.png"
-    }
-  },
-  "icons": {
-    "16": "icons/16.png",
-    "32": "icons/32.png",
-    "48": "icons/48.png",
-    "128": "icons/128.png"
-  },
   "content_scripts": [
     {
-      "matches": [
-        "https://rghs.rajasthan.gov.in/RGHS/tmsOPDDetails*"
-      ],
-      "js": [
-        "lib/xlsx.full.min.js",
-        "content.js"
-      ],
+      "matches": ["https://rghs.rajasthan.gov.in/RGHS/*", "https://rghs.rajasthan.gov.in/rghs/*"],
+      "js": ["bridge.js"],
+      "world": "MAIN",
       "run_at": "document_idle"
     },
     {
-      "matches": [
-        "http://117.211.8.251/*"
-      ],
-      "js": [
-        "hospedia.js"
-      ],
+      "matches": ["https://rghs.rajasthan.gov.in/RGHS/*", "https://rghs.rajasthan.gov.in/rghs/*"],
+      "js": ["shared.js", "sheet.js", "status.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://rghs.rajasthan.gov.in/RGHS/tmsOPDDetails*", "https://rghs.rajasthan.gov.in/rghs/tmsOPDDetails*"],
+      "js": ["lib/xlsx.full.min.js", "content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["http://117.211.8.251/*"],
+      "js": ["hospedia.js"],
       "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": [
-        "data/*.json"
-      ],
-      "matches": [
-        "https://rghs.rajasthan.gov.in/*"
-      ]
+      "resources": ["data/*.json"],
+      "matches": ["https://rghs.rajasthan.gov.in/*"]
     }
   ]
 }

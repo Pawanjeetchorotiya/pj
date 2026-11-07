@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PJ RGHS Suite</title>
+<style>
+  :root{--tx:#0b1324;--tx2:#334155;--mut:#5b6b82;--ok:#047857;--warn:#c2410c;--bad:#dc2626;--line:rgba(15,23,42,.09);
+    --card:rgba(255,255,255,.62);--chip:rgba(255,255,255,.7);--edge:rgba(255,255,255,.85);--acc:linear-gradient(135deg,#22d3ee,#6366f1 55%,#a855f7)}
+  body.dark{--tx:#f1f5f9;--tx2:#d7dfea;--mut:#a5b3c7;--ok:#34d399;--warn:#fdba74;--bad:#fca5a5;--line:rgba(255,255,255,.12);
+    --card:rgba(15,23,42,.55);--chip:rgba(255,255,255,.1);--edge:rgba(255,255,255,.16)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:390px}
+  body{font:12.5px/1.4 "Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;color:var(--tx);min-height:300px;max-height:600px;
+    background:radial-gradient(120% 70% at 0% 0%,#cffafe 0%,transparent 55%),radial-gradient(100% 80% at 100% 10%,#e0e7ff 0%,transparent 55%),radial-gradient(120% 90% at 50% 100%,#f3e8ff 0%,transparent 60%),#f8fafc}
+  body.dark{background:radial-gradient(120% 70% at 0% 0%,#0e3a4a 0%,transparent 55%),radial-gradient(100% 80% at 100% 10%,#1e1b4b 0%,transparent 55%),radial-gradient(120% 90% at 50% 100%,#3b0764 0%,transparent 60%),#0b1020}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  input{font:inherit;color:inherit}
+  .wrap{padding:12px;display:flex;flex-direction:column;gap:10px}
+  .card{background:var(--card);border:1px solid var(--edge);border-radius:18px;padding:10px 12px;
+    -webkit-backdrop-filter:blur(16px) saturate(170%);backdrop-filter:blur(16px) saturate(170%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 6px 18px rgba(15,23,42,.08)}
+  body.dark .card{box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 6px 18px rgba(0,0,0,.3)}
+  .hero{background:linear-gradient(135deg,#1e1b4b,#312e81 45%,#6d28d9 80%,#be185d);color:#fff;border:0;padding:12px;
+    box-shadow:0 10px 26px rgba(49,46,129,.35)}
+  header{display:flex;align-items:center;gap:10px}
+  header .t{flex:1;min-width:0;display:flex;flex-direction:column}
+  header b{font-size:15.5px;letter-spacing:-.01em}
+  header small{font-size:11.5px;opacity:.82;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .logo{flex:none;filter:drop-shadow(0 4px 10px rgba(0,0,0,.35))}
+  .acts{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:11px}
+  .act{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px 7px;border-radius:14px;background:rgba(255,255,255,.13);
+    border:1px solid rgba(255,255,255,.18);color:#fff;font-size:11px;font-weight:600;text-align:center;line-height:1.15;transition:.15s}
+  .act:hover{background:rgba(255,255,255,.24);transform:translateY(-1px)}
+  .act i{font-style:normal;width:30px;height:30px;border-radius:10px;display:grid;place-items:center;font-size:15px;box-shadow:0 4px 10px rgba(0,0,0,.2)}
+  .a1 i{background:linear-gradient(135deg,#10b981,#059669)}.a2 i{background:linear-gradient(135deg,#22d3ee,#6366f1)}
+  .a3 i{background:linear-gradient(135deg,#f59e0b,#ef4444)}.a4 i{background:linear-gradient(135deg,#a855f7,#ec4899)}
+  .pbtn{padding:6px 12px;border-radius:99px;background:var(--acc);color:#fff;font-weight:700;font-size:12px;box-shadow:0 3px 10px rgba(99,102,241,.3);white-space:nowrap}
+  .sbtn{padding:3px 10px;border-radius:99px;background:var(--chip);border:1px solid var(--line);font-weight:600;font-size:11.5px}
+  .sbtn:hover{filter:brightness(.97)}
+  h3{display:flex;align-items:center;gap:8px;font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:6px}
+  h3 .r{margin-left:auto;text-transform:none;letter-spacing:0}
+  .seg{display:inline-flex;padding:2px;border-radius:99px;background:var(--chip);border:1px solid var(--line)}
+  .seg button{padding:3px 10px;border-radius:99px;font-size:11.5px;font-weight:600;color:var(--tx2)}
+  .seg button.on{background:var(--acc);color:#fff}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:4px 3px;text-align:right;font-variant-numeric:tabular-nums}
+  th{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);font-weight:700}
+  th:first-child,td:first-child{text-align:left}
+  td:first-child{font-weight:700}
+  tbody tr{border-top:1px solid var(--line)}
+  tr.tot td{font-weight:800}
+  .ok{color:var(--ok)}.wn{color:var(--warn)}.bad{color:var(--bad)}.z{opacity:.45}
+  .note{font-size:11px;color:var(--mut);margin-top:5px}
+  .empty{font-size:12px;color:var(--mut);padding:4px 0}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .kpi{border-radius:12px;padding:6px 7px;background:var(--chip);border:1px solid var(--line);display:flex;flex-direction:column}
+  .kpi span{font-size:10px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .kpi b{font-size:16px;font-variant-numeric:tabular-nums}
+  .bar{display:flex;height:8px;border-radius:99px;overflow:hidden;background:var(--chip);margin-top:7px}
+  .bar i{display:block;height:100%}
+  .ups{display:flex;flex-direction:column;gap:2px;max-height:190px;overflow:auto}
+  .it{display:grid;grid-template-columns:1fr auto;gap:1px 8px;padding:6px 6px;border-radius:12px}
+  .it:hover{background:var(--chip)}
+  .it .l1{display:flex;gap:6px;align-items:center;min-width:0}
+  .it .l1 b{font-family:Consolas,"Cascadia Mono",monospace}
+  .tag{font-size:10.5px;font-weight:700;padding:0 7px;border-radius:99px;background:rgba(99,102,241,.15);color:#4338ca}
+  body.dark .tag{color:#c7d2fe}
+  .it .l2{font-size:11.5px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .it .bt{grid-column:2;grid-row:1/3;display:flex;gap:4px;align-items:center}
+  .cnt{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:18px;padding:0 6px;border-radius:99px;background:linear-gradient(135deg,#f43f5e,#dc2626);color:#fff;font-size:10.5px;font-weight:800}
+  .search{width:100%;padding:7px 11px;border-radius:12px;border:1px solid var(--line);background:var(--chip);outline:none}
+  .search:focus{border-color:#818cf8;box-shadow:0 0 0 3px rgba(99,102,241,.18)}
+  .links{display:flex;flex-direction:column;max-height:200px;overflow:auto;margin-top:6px}
+  .lk{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:10px;text-align:left;font-size:12px}
+  .lk:hover{background:var(--chip)}
+  .lk .s{width:14px;flex:none;color:#f59e0b;font-size:13px;text-align:center}
+  .lk .s.off{color:var(--mut);opacity:.35}
+  .lk span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tg{display:flex;align-items:center;justify-content:space-between;width:100%;padding:4px 0;text-align:left}
+  .sw{width:32px;height:19px;border-radius:99px;background:rgba(100,116,139,.38);position:relative;flex:none;transition:.2s}
+  .sw::after{content:"";position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:.2s}
+  .tg.on .sw{background:#10b981}.tg.on .sw::after{left:15px}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 0}
+  .logos{display:flex;gap:8px}
+  .lp{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px 6px;border-radius:14px;border:1.5px solid var(--line);background:var(--chip);font-size:11.5px;font-weight:600;color:var(--tx2)}
+  .lp:hover{filter:brightness(.98)}
+  .lp.on{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.18);color:var(--tx)}
+  details>summary{list-style:none;cursor:pointer}
+  details>summary::-webkit-details-marker{display:none}
+  details>summary h3{margin:0}
+  details>summary h3::after{content:"▸";margin-left:auto;transition:.15s}
+  details[open]>summary h3::after{transform:rotate(90deg)}
+  details[open]>summary{margin-bottom:6px}
+  footer{text-align:center;font-size:10.5px;color:var(--mut);padding-bottom:4px}
+  .toast{position:fixed;left:50%;bottom:14px;transform:translate(-50%,20px);opacity:0;background:rgba(15,23,42,.88);color:#fff;padding:5px 13px;border-radius:99px;font-weight:600;transition:.25s;pointer-events:none}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card hero">
+    <header>
+      <span class="logo" id="logo"></span>
+      <div class="t"><b>PJ RGHS Suite</b><small id="lastCheck">No tracker check saved yet</small></div>
+    </header>
+    <div class="acts">
+      <button class="act a1" id="actSheet" title="Make the RGHS + Hospedia daily sheet (Excel)"><i>▦</i>Daily sheet</button>
+      <button class="act a2" id="actTracker" title="Transaction ID Tracker"><i>⌕</i>TID tracker</button>
+      <button class="act a3" id="actOpd" title="OPD claim filler"><i>✎</i><span id="opdLabel">OPD claims</span></button>
+      <button class="act a4" id="actPay" title="Payment Tracker"><i>₹</i>Payments</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Claim status <span class="r"><span class="seg" id="statScope"><button data-v="month" class="on">This month</button><button data-v="last">Last check</button></span></span></h3>
+    <div id="statBox"></div>
+  </div>
+
+  <div class="card">
+    <h3>Daily sheet data · <span id="sheetMonth"></span><span class="r"><button class="sbtn" id="openSheet">Open</button></span></h3>
+    <div class="kpis" id="sheetKpis"></div>
+    <p class="note" id="sheetNote"></p>
+  </div>
+
+  <div class="card">
+    <h3>OPD claim filler <span class="r"><button class="sbtn" id="opdToggle">Show / hide panel</button></span></h3>
+    <div id="opdBox"></div>
+  </div>
+
+  <div class="card">
+    <h3>TIDs to upload <span class="cnt" id="upCount">0</span><span class="r"><span class="seg" id="upScope"><button data-v="month">This month</button><button data-v="all">All</button></span></span></h3>
+    <div class="ups" id="upList"></div>
+    <div class="row" id="upFoot" style="display:none"><span class="note" id="upHint" style="margin:0"></span><button class="sbtn" id="copyAll">Copy all</button></div>
+  </div>
+
+  <div class="card">
+    <h3>Go to portal page</h3>
+    <input class="search" id="q" type="search" placeholder="Search portal pages…" autocomplete="off">
+    <div class="links" id="links"></div>
+  </div>
+
+  <details class="card">
+    <summary><h3>Alerts and look</h3></summary>
+    <div id="toggles"></div>
+    <div class="row"><span>Upload ticker shows</span><span class="seg" id="tickScope"><button data-v="month">This month</button><button data-v="all">All saved</button></span></div>
+    <div class="row"><span>Theme</span><span class="seg" id="themePick"><button data-v="light">Light</button><button data-v="dark">Dark</button></span></div>
+    <p class="note">The ticker stays hidden when no TID is waiting for upload. On the Transaction ID Tracker page it follows the dates you searched.</p>
+    <h3 style="margin-top:10px">Logo</h3>
+    <div class="logos" id="logoPick"></div>
+  </details>
+
+  <footer id="ver">PJ RGHS Suite</footer>
+</div>
+<div class="toast" id="toast"></div>
+<script src="shared.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>

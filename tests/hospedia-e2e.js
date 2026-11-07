@@ -35,10 +35,11 @@ const SHIM = `
   const bg = [], cs = [];
   window.__bgMode = true;
   window.chrome = { storage: { local: { get, set }, onChanged: { addListener() {} } },
-    runtime: { lastError: null, getURL: (p) => '/__ext/' + p,
+    runtime: { id: 'test', lastError: null, getURL: (p) => '/__ext/' + p, onInstalled: { addListener() {} }, onStartup: { addListener() {} },
       onMessage: { addListener: (f) => (window.__bgMode ? bg : cs).push(f) },
       sendMessage: (m, cb) => { let done = false; for (const f of bg) { const r = f(m, {}, (x) => { done = true; cb && cb(x); }); if (r === true || done) return; } } },
-    action: { onClicked: { addListener() {} } }, tabs: {}, windows: {} };
+    action: { onClicked: { addListener() {} }, setBadgeText: async () => {}, setBadgeBackgroundColor: async () => {}, setTitle: async () => {}, setIcon: async () => {} },
+    notifications: { onClicked: { addListener() {} }, create: async () => {} }, tabs: {}, windows: {} };
   window.importScripts = () => {};
 })();`;
 
@@ -52,7 +53,7 @@ const SHIM = `
     return route.fulfill({ body: PAGE, contentType: 'text/html' });
   });
   await ctx.addInitScript(SHIM);
-  await ctx.addInitScript(`addEventListener('load', () => { (0, eval)(${JSON.stringify(read('engine.js'))}); (0, eval)(${JSON.stringify(read('background.js'))}); window.__bgMode = false; (0, eval)(${JSON.stringify(read('hospedia.js'))}); });`);
+  await ctx.addInitScript(`addEventListener('load', () => { (0, eval)(${JSON.stringify(read('shared.js'))}); (0, eval)(${JSON.stringify(read('engine.js'))}); (0, eval)(${JSON.stringify(read('sheet.js'))}); (0, eval)(${JSON.stringify(read('background.js'))}); window.__bgMode = false; (0, eval)(${JSON.stringify(read('hospedia.js'))}); });`);
   const page = await ctx.newPage();
   const errs = [];
   page.on('pageerror', (e) => errs.push(e.message));
@@ -73,6 +74,8 @@ const SHIM = `
   ok('H4 Any Other doctor -> real speciality text', /any other/i.test(d.speciality) && d.otherSpeciality === 'Dermatology' && d.docSpeciality === 'Dermatology', JSON.stringify(d));
   ok('H5 two CT -> PRE-AUTH', /CT/.test(by('2026103013724775').preAuth || ''), by('2026103013724775').preAuth);
   ok('H6 summary card shows counts', /3\s*claims made/.test(await page.locator('#pj-hos .card').innerText()), await page.locator('#pj-hos .card').innerText());
+  const hs = st['h:2026-10'] || {};
+  ok('H8 daily sheet: Hospedia bills saved with breakdown', Object.keys(hs).length === 3 && hs['2026103013724775'].cats.CBCT === 1466 && hs['2026103013724775'].cats['CT SCAN'] === 1035, JSON.stringify(hs['2026103013724775']));
   ok('H7 no page errors', !errs.length, errs.join('; '));
   console.log(`\n${res.filter(Boolean).length}/${res.length} passed`);
   await browser.close();
