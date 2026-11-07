@@ -1,66 +1,67 @@
-PJ Auto OPD Claim  (v3.2)
-=========================
-
-WHAT IT DOES
-  1. Hospedia report  ->  claim list (TID, doctor, RMC, RGHS package codes, bill)
-  2. Scan folder      ->  the right PDF is uploaded into the right box on the portal
-  3. RGHS portal      ->  the whole OPD claim form is filled
-  You check the form and press FINAL CLAIM SUBMISSION yourself. The tool never presses it.
+PJ RGHS Suite  (v4.0.0)
+=======================
+One Chrome extension instead of two. It joins
+  - "PJ RGHS Claim Status" (v3.2)  - claim status panel, upload ticker, alerts
+  - "PJ Auto OPD Claim"   (v3.2)  - makes the OPD claim list from Hospedia and fills the RGHS form
+and adds
+  - the DAILY SHEET: the month Excel (sheets 1..31) you used to make by hand from RGHS + Hospedia
+  - the Payment Tracker summary (tmsPaymentTrack)
+  - tmsBisTrack1 (Gender, Age, RGHS Card No. are read from it)
+  - a mobile app (app/ folder) for the phone
 
 INSTALL (2 minutes)
-  1. Right-click the zip > Extract All > Extract.
-  2. Chrome: open  chrome://extensions
-  3. Turn ON "Developer mode" (top right).
-  4. Remove any older "PJ ..." extension.
-  5. Press "Load unpacked" and choose the folder that has manifest.json inside.
-  6. Pin it: puzzle icon in the toolbar > pin "PJ Auto OPD Claim".
+  1. Unzip. You get a folder "pj-rghs-suite" with manifest.json inside.
+  2. Chrome: open  chrome://extensions  and turn ON "Developer mode" (top right).
+  3. REMOVE the old "PJ RGHS Claim Status" and "PJ Auto OPD Claim". This suite has both.
+     (If an old one is still there, a small card on the portal reminds you.)
+  4. "Load unpacked" -> choose the "pj-rghs-suite" folder.
+  5. Pin it: puzzle icon -> pin "PJ RGHS Suite".
+  6. Press F5 on every RGHS and Hospedia tab that is already open.
 
-EVERY DAY
-  1. Hospedia > Reports > Panel Wise Invoice Summary > RGHS NEW >
-     Panel Business Detailed > dates > VIEW ON SCREEN >
-     press the blue "Make RGHS claim list" button. A card shows how many
-     claims are ready, which need checking and which need you.
-  2. Open the RGHS portal OPD claim page (the card has a button for it).
-     The PJ panel is at the bottom right. Press "⬇ Hospedia".
-  3. Press "📁 Scan folder" ONCE and pick your scan folder.
-     The tool remembers that folder. Files scanned later are picked up on their own.
-  4. Press step 3 "Text" (or Alt+T). The scanned slip opens on the left;
-     type Chief Complaints and Diagnosis, press "Save & next" (Ctrl+Enter).
-     Text you have typed before comes back under "Quick pick".
-  5. Press "▶ Fill next TID" (or Alt+N). Check the form and the yellow
-     "Please check" box. Press FINAL CLAIM SUBMISSION yourself.
-     The claim turns "Done" on its own after the portal says it was submitted.
+EVERY DAY - THE DAILY SHEET (no more copy-paste)
+  1. RGHS: open the Transaction ID Tracker (tmsBisTrack1 has Gender / Age / Card No.) and search the dates.
+     All pages of the table are read and saved. The panel shows "✓ N saved".
+  2. RGHS: open the Payment Tracker once (optional). Paid / approved / UTR are saved.
+  3. Hospedia: Reports > Panel Wise Invoice Summary > RGHS NEW > Panel Business Detailed > dates >
+     VIEW ON SCREEN. The bill breakdown of every TID is saved by itself ("✓ N TIDs saved for the daily sheet").
+  4. Toolbar icon > "Daily sheet" (or the green sheet button on the tracker panel).
+     Pick the month > "Download month Excel".
+  The file (e.g. RGHS_OCT_26_OPD.xlsx) has the same sheets and columns as your hand-made one:
+     1 .. 31   CLAIMSUBMISSIONYEAR ... TREATING DOCTOR NAME (from RGHS), PANEL, CONSULT, X RAY, CT SCAN,
+               USG, CBCT, OPG, OCT, OTHERS (from Hospedia), DIFF = I-K and LAB = I-(M..T) as Excel formulas
+     Summary   day totals, column totals, doctor-wise count
+     Check     TIDs with no Hospedia bill, amount different (DIFF), Hospedia bill not in RGHS, missing details
+     Payments  paid / approved / deduction / UTR (when the Payment Tracker was opened)
+  The page also shows a calendar of the month, each day's rows, and the same checks on screen.
 
-THE PANEL
-  - Steps 1-4 at the top show where you are; click a step to do it.
-  - Green bar = claims submitted today.
-  - Chips (Waiting / Ready / Check / Error / Done) filter the list.
-    Type in the search box (or press /) to find a TID, patient or doctor.
-  - ⋯ menu: download a status report (Excel), a blank Excel template,
-    or clear the list.
-  - Drag the panel by its top bar; it stays where you put it.
-  - Toolbar icon: show / hide the panel. On Hospedia it makes the list.
-    On any other tab it switches to (or opens) the RGHS page.
+  How Hospedia items go into columns:
+     APPOINTMENT / consultation -> CONSULT      CBCT, cone beam, "CT SCAN DENTAL" -> CBCT
+     OPG -> OPG     OCT -> OCT     other CT -> CT SCAN     USG / ultrasound / doppler -> USG
+     X-RAY -> X RAY     LAB / pathology tests -> LAB     anything else (ECG, physio, procedures) -> OTHERS
+  LAB in the sheet is the formula I-(M..T), exactly like your sheet.
 
-KEYS
-  Alt+N  fill next TID        Alt+T  type text        Alt+M  minimise
-  Ctrl+Enter  save text & next                       Esc    close text box
+OPD CLAIM FILLER (same as before)
+  Hospedia report -> "Make RGHS claim list" -> RGHS OPD page -> PJ panel bottom right ->
+  "⬇ Hospedia", "📁 Scan folder", step 3 "Text", "▶ Fill next TID". You check and press
+  FINAL CLAIM SUBMISSION yourself - the tool never presses SAVE or FINAL.
+  Toolbar icon > "OPD claims": on the OPD page it shows / hides the panel; on Hospedia it makes the list.
+  Keys: Alt+N fill next, Alt+T type text, Alt+M minimise, Ctrl+Enter save text & next.
 
-WHAT STAYS MANUAL (and why)
-  - Chief complaints and diagnosis: these are handwritten on the OPD slip.
-    No software reads handwriting reliably, so the tool shows you the slip
-    and you type. Typed text is saved and offered again as Quick pick.
-  - Live / BIS photo: it is the patient's photo.
-  - FINAL CLAIM SUBMISSION: once submitted, a mistake cannot be undone.
+CLAIM STATUS (same as before)
+  Tracker panel: click any number to filter the portal table. Calendar = quick dates.
+  Copy = WhatsApp summary. Red badge in the top bar = TIDs waiting for upload.
 
-PRE-AUTH WARNING
-  The panel warns when investigations come to more than Rs 2000, or when
-  more than one CT / MRI / Doppler is in the claim.
-
-WHEN SOMETHING IS WRONG
-  The tool still fills everything it can. If the doctor is not in the list,
-  an RMC does not verify or a package code is not found, the rest of the
-  form is filled and the claim is marked "Check" with the reason.
+MOBILE APP
+  Phone app (made with Apper):  https://preview--rghs-daily-effectiv.apper.so
+  Open it in Chrome on the phone, then browser menu > "Add to Home screen".
+  (The app/ folder of this extension is the same app for offline use; it can also be hosted on
+  GitHub Pages: Settings > Pages > branch main / root -> https://pawanjeetchorotiya.github.io/pj/app/ )
+  Bring data to the phone in any of these ways (button "Import files"):
+    - the Transaction ID Tracker Excel downloaded from RGHS
+    - the Hospedia report exported to Excel
+    - an older daily sheet (like RGHS_OCT_26_OPD.xlsx)
+    - a backup made on the PC: Daily sheet page > "Data on this device" > "Backup (JSON)"
+  It shows the same calendar, checks and makes the same month Excel.
 
 PRIVACY
-  Everything stays in your own Chrome. No patient data is sent anywhere.
+  Everything stays in this Chrome (or on the phone). No patient data is sent anywhere.

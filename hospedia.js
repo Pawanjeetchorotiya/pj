@@ -1,4 +1,4 @@
-// PJ Auto OPD Claim - Hospedia side. Adds a button on the report page that turns
+// PJ RGHS Suite - Hospedia side. Adds a button on the report page that turns
 // "Panel Wise Invoice Summary" (scheme RGHS NEW) into ready claim rows.
 (() => {
   if (window.__pjHospedia) { window.__pjHospedia(); return; }
@@ -53,12 +53,15 @@
       ul{margin:0;padding-left:18px;font-size:12px;color:var(--mute)}
       .go{display:block;text-align:center;text-decoration:none;color:#fff;font-weight:700;padding:10px;border-radius:12px;background:linear-gradient(135deg,#0ea5e9,#6366f1)}
       .msg{font-size:12.5px}
+      .saved{display:none;font:600 11.5px inherit;color:#fff;background:#16a34a;border-radius:99px;padding:4px 11px;box-shadow:0 6px 16px rgba(22,163,74,.35)}
+      .saved.on{display:block}
     </style>
     <div class="w">
       <div class="card" role="status" aria-live="polite">
         <div class="ch"><b class="ct"></b><button class="x" aria-label="Close">✕</button></div>
         <div class="cb"></div>
       </div>
+      <span class="saved" title="Saved in this Chrome for the RGHS daily sheet (Excel)"></span>
       <button class="btn" type="button" title="Turn this report into the RGHS claim list"><span class="lg">PJ</span><span class="sp"></span><span class="bt">Make RGHS claim list</span></button>
     </div>`;
     document.body.appendChild(host);
@@ -98,6 +101,7 @@
       if (resp.noTid) notes.push(`${resp.noTid} billed row(s) had no TID and were left out.`);
       if (resp.noDoctor) notes.push(`${resp.noDoctor} claim(s): doctor not in your doctor list.`);
       if (resp.preAuth) notes.push(`${resp.preAuth} claim(s) need PRE-AUTH (investigations over ₹2000 or 2+ CT/MRI).`);
+      if (resp.sheet) notes.push(`Daily sheet: Hospedia bill of ${resp.sheet} TID(s) saved.`);
       show('Claim list ready ✔', `
         <div class="big">${resp.count}<small>claims made</small></div>
         <div class="grid">
@@ -110,8 +114,29 @@
         <div class="msg" style="color:var(--mute);font-size:11.5px">On the RGHS page press <b>⬇ Hospedia</b> in the PJ panel.</div>`);
     });
   }
+  // The bill breakdown (CONSULT, X RAY, USG ... LAB) of every TID on the report is saved for the
+  // RGHS daily sheet as soon as the report is on screen - no button needed.
+  let lastSig = '';
+  function autoSave() {
+    const t = reportTable();
+    if (!t) return;
+    const rows = [...t.rows].map((r) => [...r.cells].map((c) => c.innerText.replace(/\s+/g, ' ').trim()));
+    if (rows.length < 2) return;
+    const sig = rows.length + ':' + rows.map((r) => r.join('|')).join('\n').length;
+    if (sig === lastSig) return;
+    lastSig = sig;
+    try {
+      chrome.runtime.sendMessage({ type: 'hospedia:put', rows }, (resp) => {
+        if (chrome.runtime.lastError || !resp || !resp.ok) { lastSig = ''; return; }
+        const { q } = mount();
+        q('.saved').textContent = '✓ ' + resp.count + ' TIDs saved for the daily sheet';
+        q('.saved').classList.add('on');
+      });
+    } catch (e) { lastSig = ''; }
+  }
   function update() {
     if (reportTable() || /report/i.test(location.pathname + location.hash)) mount();
+    autoSave();
   }
   // toolbar icon on the Hospedia tab = make the list
   chrome.runtime.onMessage.addListener((m, s, reply) => {

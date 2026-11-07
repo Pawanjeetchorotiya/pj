@@ -1,4 +1,4 @@
-/* PJ Auto OPD Claim - content script for RGHS "OPD TID Details - Treatment & Claim Submission".
+/* PJ RGHS Suite (OPD claim filler) - content script for RGHS "OPD TID Details - Treatment & Claim Submission".
  * It fills the form from an Excel/CSV row and the scan folder, then STOPS.
  * It never presses SAVE or FINAL CLAIM SUBMISSION. The user checks and submits.
  */
@@ -499,6 +499,7 @@
     .hd{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--grad);color:#fff;cursor:move;user-select:none}
     .logo{width:32px;height:32px;border-radius:10px;background:#fff;color:#4f46e5;font-weight:800;display:grid;place-items:center;font-size:13px;
       box-shadow:0 4px 12px rgba(0,0,0,.18)}
+    .logo.svg{background:none;box-shadow:none;filter:drop-shadow(0 3px 8px rgba(0,0,0,.25))}
     .tt{flex:1;min-width:0}.tt b{display:block;font-size:15px;letter-spacing:.2px}.tt small{opacity:.85;font-size:11px}
     .hb{background:rgba(255,255,255,.18);border:0;color:#fff;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:15px;display:grid;place-items:center}
     .hb:hover{background:rgba(255,255,255,.32)}
@@ -703,6 +704,8 @@
   </div>`;
   document.documentElement.appendChild(host);
   const q = (s) => root.querySelector(s);
+  // same PJ logo as the rest of the suite (shared.js runs in this world too)
+  try { if (self.PJ && self.PJ.logoSVG) { const lg = root.querySelector('.logo'); lg.innerHTML = self.PJ.logoSVG(32); lg.classList.add('svg'); } } catch (e) { /* keep the text logo */ }
   const panel = q('.p');
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
